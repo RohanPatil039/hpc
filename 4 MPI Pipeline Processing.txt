@@ -1,0 +1,81 @@
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define ARRAY_SIZE 500
+
+void stage1(double *number) { *number -= 4; }
+void stage2(double *number) { *number /= 5; }
+void stage3(double *number) { *number += 3; }
+void stage4(double *number) { *number *= 7; }
+
+int main(int argc, char *argv[]) {
+    int rank, size;
+    double number;
+    double array[ARRAY_SIZE];
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if (rank == 0) {
+        for (int i = 0; i < ARRAY_SIZE; i++) array[i] = 14;
+    }
+
+    MPI_Scatter(array, 1, MPI_DOUBLE, &number, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    if (rank == 1) stage1(&number);
+    if (rank == 2) stage2(&number);
+    if (rank == 3) stage3(&number);
+    if (rank == 4) stage4(&number);
+
+    MPI_Gather(&number, 1, MPI_DOUBLE, array, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) printf("Output: %.2f\n", array[0]);
+
+    MPI_Finalize();
+    return 0;
+}
+
+
+
+//OR USE THIS
+
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define ARRAY_SIZE 500
+
+void stage1(double *number) { *number -= 4; }
+void stage2(double *number) { *number /= 5; }
+void stage3(double *number) { *number += 3; }
+void stage4(double *number) { *number *= 7; }
+
+int main(int argc, char *argv[]) {
+    int rank, size;
+    double number;
+    double array[ARRAY_SIZE];
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if (rank == 0) {
+        for (int i = 0; i < ARRAY_SIZE; i++) array[i] = 14;
+    }
+
+    MPI_Scatter(array, 1, MPI_DOUBLE, &number, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    stage1(&number);
+    stage2(&number);
+    stage3(&number);
+    stage4(&number);
+
+    MPI_Gather(&number, 1, MPI_DOUBLE, array, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) printf("Output: %.2f\n", array[0]);
+
+    MPI_Finalize();
+    return 0;
+}
