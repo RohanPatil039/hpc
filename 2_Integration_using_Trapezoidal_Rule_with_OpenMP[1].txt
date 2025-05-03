@@ -1,0 +1,82 @@
+#include <iostream>
+#include <omp.h>
+
+double func(double x) {
+    return x * x;
+}
+
+double trapezoidal_rule(double a, double b, int n, int num_threads) {
+    double h = (b - a) / n;
+    double integral = 0.0;
+
+    // Parallelized loop with reduction to avoid race condition
+#pragma omp parallel for reduction(+:integral) num_threads(num_threads)
+    for (int i = 1; i < n; i++) {
+        double x = a + i * h;
+        integral += func(x);
+    }
+
+    integral = (integral + (func(a) + func(b)) / 2) * h;
+    return integral;
+}
+
+int main() {
+    double a = 0.0, b = 10.0;
+    int n = 1000000;
+    int num_threads = 4;
+
+    double result = trapezoidal_rule(a, b, n, num_threads);
+    std::cout << "Integral of f(x) = x^2 from " << a << " to " << b
+        << " is: " << result << std::endl;
+
+    return 0;
+}
+
+
+//with input
+
+#include <iostream>
+#include <omp.h>
+
+double func(double x) {
+    return x * x;
+}
+
+double trapezoidal_rule(double a, double b, int n, int num_threads) {
+    double h = (b - a) / n;
+    double integral = 0.0;
+
+#pragma omp parallel for reduction(+:integral) num_threads(num_threads)
+    for (int i = 1; i < n; i++) {
+        double x = a + i * h;
+        integral += func(x);
+    }
+
+    integral = (integral + (func(a) + func(b)) / 2) * h;
+    return integral;
+}
+
+int main() {
+    double a, b;
+    int n, num_threads;
+
+    std::cout << "Enter lower limit (a): ";
+    std::cin >> a;
+    std::cout << "Enter upper limit (b): ";
+    std::cin >> b;
+    std::cout << "Enter number of subintervals (n): ";
+    std::cin >> n;
+    std::cout << "Enter number of threads: ";
+    std::cin >> num_threads;
+
+    double start = omp_get_wtime();
+    double result = trapezoidal_rule(a, b, n, num_threads);
+    double end = omp_get_wtime();
+
+    std::cout << "Integral of f(x) = x^2 from " << a << " to " << b
+        << " is: " << result << std::endl;
+    std::cout << "Time taken: " << (end - start) << " seconds" << std::endl;
+
+    return 0;
+}
+
